@@ -16,3 +16,11 @@ hs_err_pid*
 .project
 .settings
 .gradle
+
+# Custom files for IntelliJ Idea
+*.iml
+.idea/
+/out/
+*.ipr
+*.iws
+

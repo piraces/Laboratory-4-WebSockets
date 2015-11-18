@@ -62,9 +62,11 @@ public class ElizaServerTest {
 	}
 
 	@Test(timeout = 1000)
-	@Ignore
 	public void onChat() throws DeploymentException, IOException, URISyntaxException, InterruptedException {
-		// COMPLETE
+		// Expected to receive five messages from server.
+		// Three correspond to the server start ("The doctor is in." and "What's on your mind?").
+		// The other two are the response of the question.
+		CountDownLatch latch = new CountDownLatch(5);
 		List<String> list = new ArrayList<>();
 		ClientEndpointConfig configuration = ClientEndpointConfig.Builder.create().build();
 		ClientManager client = ClientManager.createClient();
@@ -73,22 +75,27 @@ public class ElizaServerTest {
 			@Override
 			public void onOpen(Session session, EndpointConfig config) {
 
-				// COMPLETE
-
+				// Sends a message with only one possible response.
+				// It's visible in Eliza.java (String[] temp4).
+				session.getAsyncRemote().sendText("Maybe my mind is disturbed...");
 				session.addMessageHandler(new MessageHandler.Whole<String>() {
 
 					@Override
 					public void onMessage(String message) {
 						list.add(message);
-						// COMPLETE
+						// Decreases the counter of the specified latch.
+						latch.countDown();
 					}
 				});
 			}
 
 		}, configuration, new URI("ws://localhost:8025/websockets/eliza"));
-		// COMPLETE
-		// COMPLETE
-		// COMPLETE
+		// Waits until latch counter reaches zero (due to invocations of the countDown() method).
+		latch.await();
+		// Check if the size of the list is the expected.
+		assertEquals(5, list.size());
+		// Check the message received.
+		assertEquals("You don't seem very certain.", list.get(3));
 	}
 
 	@After
